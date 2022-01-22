@@ -1,6 +1,6 @@
-# css-layout-editor README
+# layout-editor README
 
-This is the README for your extension "css-layout-editor". After writing up a brief description, we recommend including the following sections.
+This is the README for your extension "layout-editor". After writing up a brief description, we recommend including the following sections.
 
 ## Features
 
