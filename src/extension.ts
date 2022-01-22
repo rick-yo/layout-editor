@@ -21,7 +21,7 @@ interface FlexDeclaration {
 function activate(context: vscode.ExtensionContext) {
   let flexDeclarations: FlexDeclaration[];
   let currentDocument: vscode.TextDocument;
-  let pickerPanel: vscode.WebviewPanel | null;
+  let pickerPanel: vscode.WebviewPanel | null = null;
 
   const activeEditor = vscode.window.activeTextEditor;
   const iconDecorationType = createFlexDecoration(context);
@@ -53,7 +53,7 @@ function activate(context: vscode.ExtensionContext) {
   });
 
   const disposableCommand = vscode.commands.registerCommand(commandName, () => {
-    if (pickerPanel === null) {
+    if (!pickerPanel) {
       pickerPanel = vscode.window.createWebviewPanel(
         commandName,
         'Layout Editor',
@@ -87,8 +87,8 @@ function activate(context: vscode.ExtensionContext) {
             });
           }
           updateFlexProperty(
-            message.propertyName,
-            message.propertyValue,
+            message.name,
+            message.value,
             targetTextEditor
           );
         })
@@ -97,7 +97,7 @@ function activate(context: vscode.ExtensionContext) {
       pickerPanel.reveal();
     }
 
-    const webviewPath = context.asAbsolutePath('/src/flexbox-picker.html');
+    const webviewPath = context.asAbsolutePath('/webview/dist/index.html');
     let html = fs.readFileSync(webviewPath, 'utf-8');
     html = html.replace('$FS_PATH', currentDocument.uri.fsPath);
     // .replace('$PROPERTY_NAME', currentFlexProperty.name)

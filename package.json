@@ -22,8 +22,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "layout-editor.helloWorld",
-        "title": "Hello World"
+        "command": "layout.editor",
+        "title": "Open Layout Editor"
       }
     ]
   },

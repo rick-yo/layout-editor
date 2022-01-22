@@ -1,21 +1,40 @@
 <script setup lang="ts">
-// This starter template is using Vue 3 <script setup> SFCs
-// Check out https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup
-import HelloWorld from './components/HelloWorld.vue'
+import { reactive } from 'vue';
+import { alignContentIcons, resolveIconUrl } from './assets/iconResolver';
+import RadioGroup from './components/RadioGroup.vue'
+const vscode = acquireVsCodeApi();
+
+const alignContentOptions = Object.keys(alignContentIcons).map((value) => ({ url: resolveIconUrl(alignContentIcons[value]), value }))
+const flexProperties: Record<string, string> = reactive({
+  'flex-direction': '',
+  'flex-wrap': '',
+  'align-content': '',
+  'justify-content': '',
+  'align-items': '',
+});
+
+function fromSelectHandler(name: string) {
+  return (value: string) => {
+    flexProperties[name] = value;
+    vscode.postMessage({
+      name,
+      value
+    });
+  }
+}
+
 </script>
 
 <template>
-  <img alt="Vue logo" src="./assets/logo.png" />
-  <HelloWorld msg="Hello Vue 3 + TypeScript + Vite" />
+  <div v-for="(value, name) in flexProperties">
+    <div>{{ name }}: {{ value }}</div>
+    <RadioGroup
+      :options="alignContentOptions"
+      :selected="flexProperties['align-content']"
+      @select="fromSelectHandler('align-content')"
+    />
+  </div>
 </template>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
 </style>
