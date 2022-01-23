@@ -23,7 +23,7 @@
     "commands": [
       {
         "command": "layout.editor",
-        "title": "Open Layout Editor"
+        "title": "Open layout editor"
       }
     ]
   },
