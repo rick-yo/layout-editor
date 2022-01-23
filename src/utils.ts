@@ -6,13 +6,13 @@ const SUPPORTS_FILE_TYPES = [
   'less',
   'sass',
   'scss',
-  'rml',
   'vue',
-  'html',
+  // 'rml',
+  // 'html',
 ];
 
 const FLEX_REG = /display\s*:\s*flex\s*;/gi;
-const FLEX_PROPERTIES = {
+const FLEX_PROPERTY = {
   justifyContent: 'justify-content',
   flexDirection: 'flex-direction',
   flexWrap: 'flex-wrap',
@@ -20,41 +20,87 @@ const FLEX_PROPERTIES = {
   alignItems: 'align-items',
 };
 const FLEX_PROPERTY_REG = new RegExp(
-  `(${Object.values(FLEX_PROPERTIES).join('|')}|display)\\s*:\\s*([a-z-]+)\\s*;`,
+  `(${Object.values(FLEX_PROPERTY).join(
+    '|'
+  )}|display)\\s*:\\s*([a-z-]+)\\s*;`,
   'gi'
 );
 
-function createFlexDecoration(context: vscode.ExtensionContext) {
-  const iconDecorationType = vscode.window.createTextEditorDecorationType({
-    after: {
-      contentText: ' ',
-      margin: '0.1em 0.2em 0 0.2em',
-      width: '.8rem',
-      height: '0.8em',
-    },
-    dark: {
-      after: {
-        contentIconPath: context.asAbsolutePath(
-          '/assets/flexbox-icon-light.svg'
-        ),
-      },
-    },
-    light: {
-      after: {
-        contentIconPath: context.asAbsolutePath(
-          '/assets/flexbox-icon-dark.svg'
-        ),
-      },
-    },
+function findEditorByFsPath(fsPath: string): vscode.TextEditor | undefined {
+  return vscode.window.visibleTextEditors.find((textEditor) => {
+    return textEditor.document.uri.fsPath === fsPath;
   });
-  return iconDecorationType;
+}
+
+enum WorkSpaceStateKeys {
+  flexDeclarations = 'flexDeclarations',
+  fsPath = 'fsPath',
+  pickerPanel = 'pickerPanel',
+}
+
+interface FlexDeclaration {
+  name: string;
+  value: string;
+  line: number;
+  character: number;
+  match: string;
+}
+
+const stateManagerMap = new WeakMap<vscode.ExtensionContext, WorkSpaceState>();
+
+class WorkSpaceState {
+  state: {
+    [WorkSpaceStateKeys.flexDeclarations]: FlexDeclaration[];
+    [WorkSpaceStateKeys.fsPath]: string;
+    [WorkSpaceStateKeys.pickerPanel]: vscode.WebviewPanel | null;
+  } = {
+    flexDeclarations: [],
+    fsPath: '',
+    pickerPanel: null,
+  };
+  constructor() {}
+
+  get flexDeclarations(): FlexDeclaration[] {
+    return this.state[WorkSpaceStateKeys.flexDeclarations] || [];
+  }
+  set flexDeclarations(value: FlexDeclaration[]) {
+    this.state[WorkSpaceStateKeys.flexDeclarations] = value;
+  }
+
+  get fsPath(): string {
+    return this.state[WorkSpaceStateKeys.fsPath];
+  }
+
+  set fsPath(value: string) {
+    this.state[WorkSpaceStateKeys.fsPath] = value;
+  }
+
+  get pickerPanel() {
+    return this.state[WorkSpaceStateKeys.pickerPanel];
+  }
+
+  set pickerPanel(value: vscode.WebviewPanel | null) {
+    this.state[WorkSpaceStateKeys.pickerPanel] = value;
+  }
+}
+
+function createWorkSpaceState(context: vscode.ExtensionContext) {
+  let instance = stateManagerMap.get(context);
+  if (instance) {
+    return instance;
+  }
+  instance = new WorkSpaceState();
+  stateManagerMap.set(context, instance);
+  return instance;
 }
 
 export {
   commandName,
   SUPPORTS_FILE_TYPES,
   FLEX_REG,
-  FLEX_PROPERTIES,
+  FLEX_PROPERTY,
   FLEX_PROPERTY_REG,
-  createFlexDecoration,
+  findEditorByFsPath,
+  createWorkSpaceState,
+  FlexDeclaration,
 };
