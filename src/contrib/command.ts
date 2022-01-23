@@ -2,8 +2,10 @@ import vscode from 'vscode';
 import fs from 'fs';
 import assert from 'assert';
 import {
+  cloneDeep,
   commandName,
   createWorkSpaceState,
+  emptyFlexProps,
   findEditorByFsPath,
   FlexDeclaration,
   FLEX_PROPERTY_REG,
@@ -83,16 +85,13 @@ function command(context: vscode.ExtensionContext) {
   function collectMessageData(editor?: vscode.TextEditor) {
     workspace.flexDeclarations = collectFlexDeclaration(editor);
     workspace.fsPath = editor?.document.uri.fsPath ?? '';
-    assert(workspace.fsPath, 'fsPath not found');
   }
 
   function postMessageToWebview() {
-    const flexProperties = workspace.flexDeclarations.reduce<
-      Record<string, string>
-    >((prev, curr) => {
+    const flexProperties = workspace.flexDeclarations.reduce((prev, curr) => {
       prev[curr.name] = curr.value;
       return prev;
-    }, {});
+    }, cloneDeep(emptyFlexProps));
     workspace.pickerPanel?.webview.postMessage({
       command: 'setState',
       data: flexProperties,
@@ -111,27 +110,37 @@ function command(context: vscode.ExtensionContext) {
         (item) => item.name === propertyName
       );
       if (declaration) {
-        builder.replace(
-          new vscode.Range(
-            new vscode.Position(declaration.line, declaration.character),
-            new vscode.Position(
-              declaration.line,
-              declaration.character + declaration.match.length
+        if (propertyValue) {
+          builder.replace(
+            new vscode.Range(
+              new vscode.Position(declaration.line, declaration.character),
+              new vscode.Position(
+                declaration.line,
+                declaration.character + declaration.match.length
+              )
+            ),
+            newText
+          );
+        } else {
+          const nextLine = editor.document.lineAt(declaration.line + 1);
+          builder.delete(
+            new vscode.Range(
+              new vscode.Position(declaration.line, declaration.character),
+              new vscode.Position(
+                declaration.line + 1,
+                nextLine.firstNonWhitespaceCharacterIndex
+              )
             )
-          ),
-          newText
-        );
+          );
+        }
       } else {
         const displayDeclaration = workspace.flexDeclarations.find(
           (item) => item.name === 'display'
         );
         assert(displayDeclaration, `display: flex; css rule not found`);
         builder.insert(
-          new vscode.Position(
-            displayDeclaration.line + 1,
-            displayDeclaration.character
-          ),
-          `${newText}`
+          new vscode.Position(displayDeclaration.line + 1, 0),
+          `\t${newText}\n`
         );
       }
     });
@@ -147,6 +156,7 @@ function collectFlexDeclaration(editor?: vscode.TextEditor) {
   }
   const document = editor.document;
   const cursorPosition = editor.selection.active;
+
   let ruleSetStartLine = cursorPosition.line;
   let ruleSetEndLine = cursorPosition.line;
 
@@ -157,11 +167,12 @@ function collectFlexDeclaration(editor?: vscode.TextEditor) {
     ruleSetStartLine--;
   }
   while (ruleSetEndLine < document.lineCount) {
-    if (document.lineAt(ruleSetStartLine).text.includes('}')) {
+    if (document.lineAt(ruleSetEndLine).text.includes('}')) {
       break;
     }
     ruleSetEndLine++;
   }
+
   for (
     let currentLine = ruleSetStartLine;
     currentLine < ruleSetEndLine;

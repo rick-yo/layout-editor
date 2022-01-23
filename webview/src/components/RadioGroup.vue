@@ -10,13 +10,17 @@ export interface RadioGroupProps {
   selected?: string;
 }
 
-defineProps<RadioGroupProps>()
+const props = defineProps<RadioGroupProps>()
 const emit = defineEmits<{
   (event: 'select', selected: string): void
 }>()
 
 function select(value: string) {
-  emit('select', value)
+  if (value === props.selected) {
+    emit('select', '')
+  } else {
+    emit('select', value)
+  }
 }
 
 </script>

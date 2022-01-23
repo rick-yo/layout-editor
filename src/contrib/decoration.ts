@@ -78,14 +78,14 @@ function createFlexDecoration(context: vscode.ExtensionContext) {
     dark: {
       after: {
         contentIconPath: context.asAbsolutePath(
-          '/assets/flexbox-icon-light.svg'
+          '/assets/layout-dark.svg'
         ),
       },
     },
     light: {
       after: {
         contentIconPath: context.asAbsolutePath(
-          '/assets/flexbox-icon-dark.svg'
+          '/assets/layout-light.svg'
         ),
       },
     },

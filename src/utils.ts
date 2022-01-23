@@ -20,11 +20,16 @@ const FLEX_PROPERTY = {
   alignItems: 'align-items',
 };
 const FLEX_PROPERTY_REG = new RegExp(
-  `(${Object.values(FLEX_PROPERTY).join(
-    '|'
-  )}|display)\\s*:\\s*([a-z-]+)\\s*;`,
+  `(${Object.values(FLEX_PROPERTY).join('|')}|display)\\s*:\\s*([a-z-]+)\\s*;`,
   'gi'
 );
+const emptyFlexProps = {
+  [FLEX_PROPERTY.flexDirection]: '',
+  [FLEX_PROPERTY.flexWrap]: '',
+  [FLEX_PROPERTY.alignContent]: '',
+  [FLEX_PROPERTY.justifyContent]: '',
+  [FLEX_PROPERTY.alignItems]: '',
+};
 
 function findEditorByFsPath(fsPath: string): vscode.TextEditor | undefined {
   return vscode.window.visibleTextEditors.find((textEditor) => {
@@ -94,6 +99,10 @@ function createWorkSpaceState(context: vscode.ExtensionContext) {
   return instance;
 }
 
+function cloneDeep<T>(obj: T): T {
+  return JSON.parse(JSON.stringify(obj));
+}
+
 export {
   commandName,
   SUPPORTS_FILE_TYPES,
@@ -103,4 +112,6 @@ export {
   findEditorByFsPath,
   createWorkSpaceState,
   FlexDeclaration,
+  emptyFlexProps,
+  cloneDeep,
 };
