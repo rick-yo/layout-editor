@@ -60,9 +60,7 @@ function command(context: vscode.ExtensionContext) {
 
           if (!targetTextEditor) {
             const uri = vscode.Uri.file(targetFsPath);
-            targetTextEditor = await vscode.window.showTextDocument(uri, {
-              viewColumn: vscode.ViewColumn.Beside,
-            });
+            targetTextEditor = await vscode.window.showTextDocument(uri);
           }
           updateEditorFlexProperty(
             message.name,

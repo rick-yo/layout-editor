@@ -9,6 +9,9 @@
   "categories": [
     "Other"
   ],
+  "repository": {
+    "url": "https://github.com/luvsic3/layout-editor"
+  },
   "activationEvents": [
     "onLanguage:css",
     "onLanguage:less",
